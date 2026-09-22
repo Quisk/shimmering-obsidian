@@ -24,11 +24,13 @@ Gallery.](https://alfred.app/workflows/chrisgrieser/shimmering-obsidian/)
         - [Search for folders](#search-for-folders)
         - [Search for headings](#search-for-headings)
         - [Browse links of a note](#browse-links-of-a-note)
+    - [Search notes across multiple vaults](#search-notes-across-multiple-vaults)
     - [Search notes by their tags](#search-notes-by-their-tags)
     - [Search bookmarked files](#search-bookmarked-files)
     - [Search recent files](#search-recent-files)
     - [Search for attachments](#search-for-attachments)
     - [Search all external links in the entire vault](#search-all-external-links-in-the-entire-vault)
+    - [Search all external links across multiple vaults](#search-all-external-links-across-multiple-vaults)
     - [Extra features](#extra-features)
         - [Vault search as Alfred fallback](#vault-search-as-alfred-fallback)
         - [Previewing notes via QuickLook](#previewing-notes-via-quicklook)
@@ -91,6 +93,15 @@ Plugin](https://obsidian.md/plugins?id=metadata-extractor) on a regular basis.
 By default, this happens every 30 minutes, meaning recently created notes,
 recently renamed notes, or recent tag changes are not picked up at once. You can
 change the metadata refresh rate via the Metadata Extractor Plugin's settings.
+
+> [!TIP]
+> If you use dot-namespaced frontmatter properties for structure (e.g., a
+> `parent` link, or a category/type classification), the `o`, `oa`, `oe`, and
+> `oea` searches can surface them: set the corresponding frontmatter key names
+> in the **Note property key: parent/category/type** workflow configuration
+> fields. All three are blank (disabled) by default. When set, the property
+> values show up in each result's subtitle and become part of its searchable
+> text.
 
 ### Main search
 **`o`: Open files in your vault.**
@@ -189,6 +200,22 @@ that note**
     - Press `⌥ + ⏎` on an external link to copy the URL to the clipboard
       instead.
 
+### Search notes across multiple vaults
+**`oa`: Search files, aliases, and headings across your main vault and any
+additional configured vaults**
+- A flat version of the main `o` search that also covers sibling vaults listed
+  in the **Additional vault folders (`oa`/`oea`)** workflow configuration
+  (comma-separated folder names, relative to the folder containing your main
+  vault — e.g. `Recipes.sync, Work.sync`).
+- Unlike `o`, this does not support folder browsing, canvases, or bookmark/
+  recent-file boosting, since those depend on per-vault state (open tabs,
+  starred files, bookmarks) that isn't merged across vaults.
+- `⏎`: Open the file, or the file at a heading, in Obsidian — resolved against
+  whichever vault the result actually belongs to.
+- `⌥ + ⏎`: Reveal the file in Finder.
+- `⌃ + ⏎`: Copy a Markdown link or wikilink to the file (or heading), same as
+  `o`'s equivalent modifier.
+
 ### Search notes by their tags
 <!-- harper: ignore -->
 **`ot`: Search `t`ags and subsequently files with that tag**
@@ -217,7 +244,8 @@ that note**
 - Only the 10 most recent files are displayed.
 
 ### Search for attachments
-**`oa`: `a`ttachments**
+**`of`: `f`ile attachments** (moved off `oa`, which is now the [multi-vault note
+search](#search-notes-across-multiple-vaults) in this fork)
 - Searches only for attachments (non-Markdown files) in your vault. `⏎` opens
   the selected files in your default app. (Obsidian itself is not opened.)
 - The modifiers `⌘/⌃/⌥ + ⏎` and the previewing (`⇧` or `⌘y`) work the same way
@@ -231,6 +259,16 @@ the file simply is opened in your default app.)
 **`oe`: Search all `e`xternal links in your entire vault**
 - `⏎`: Opens the link in the browser.
 - `cmd + ⏎`: Reveal the link in Obsidian.
+- `alt + ⏎`: Copies the URL to the clipboard.
+
+### Search all external links across multiple vaults
+**`oea`: Search all external links across your main vault and any additional
+configured vaults**
+- Works the same as `oe` above, but also searches sibling vaults listed in the
+  **Additional vault folders (`oa`/`oea`)** workflow configuration.
+- `⏎`: Opens the link in the browser.
+- `cmd + ⏎`: Reveal the link in Obsidian — resolved against whichever vault the
+  link actually belongs to.
 - `alt + ⏎`: Copies the URL to the clipboard.
 
 ### Extra features
@@ -498,11 +536,13 @@ Search the official [Obsidian developer docs](https://docs.obsidian.md/Home).
 
 ## Cheat sheet
 - `o`: All notes
+- `oa`: All notes, across the main vault + configured additional vaults
 - `oe`: All external links
+- `oea`: All external links, across the main vault + configured additional vaults
 - `ot`: Tags
 - `ob`: Bookmarked files/searches
 - `or`: Recent files
-- `oa`: Attachments
+- `of`: Attachments
 - `oo`: Append/open to scratchpad
 - `on`: New note
 - `ow`: Workspace switcher
