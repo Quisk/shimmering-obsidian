@@ -18,8 +18,21 @@ function readFile(path) {
 /** @type {AlfredRun} */
 // biome-ignore lint/correctness/noUnusedVariables: Alfred run
 function run(argv) {
-	const vaultPath = $.getenv("vault_path");
-	const vaultNameEnc = encodeURIComponent(vaultPath.replace(/.*\//, ""));
+	let vaultPath = $.getenv("vault_path");
+
+	// determine input
+	let input = (argv[0] || "").trim(); // trim to remove trailing \n
+
+	// `oea` (external-link search across sibling vaults) prefixes the source
+	// vault's folder name before a "|", since its results aren't rooted at
+	// vault_path like every other caller's are.
+	const pipeIdx = input.indexOf("|");
+	if (pipeIdx !== -1) {
+		const vaultFolder = input.slice(0, pipeIdx);
+		input = input.slice(pipeIdx + 1);
+		vaultPath = `${vaultPath}/../${vaultFolder}`;
+	}
+	const vaultNameEnc = encodeURIComponent(vaultPath.replace(/\/$/, "").replace(/.*\//, ""));
 
 	// VALIDATE that `Advanced URI` is installed and enabled
 	const configFolder = $.getenv("config_folder");
@@ -30,11 +43,9 @@ function run(argv) {
 		return '"Advanced URI" plugin not installed or not enabled.';
 	}
 
-	// determine input
-	const input = (argv[0] || "").trim(); // trim to remove trailing \n
 	const relativePath = (input.split("#")[0] || "").split(":")[0] || "";
 	const heading = input.split("#")[1];
-	const lineNum = input.split(":")[1]; // used by `oe` external link search to open at line
+	const lineNum = input.split(":")[1]; // used by `oe`/`oea` external link search to open at line
 
 	// DOCS https://vinzent03.github.io/obsidian-advanced-uri/concepts/navigation_parameters#open-mode
 	const openMode = $.NSProcessInfo.processInfo.environment.objectForKey("open_mode").js;

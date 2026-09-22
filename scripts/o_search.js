@@ -25,6 +25,18 @@ function camelCaseMatch(str) {
 	return [subwords, camelCaseSeparated, fullword, str].join(" ") + " ";
 }
 
+/** Flatten a frontmatter value (wikilink, array, quoted string) to plain text. */
+function cleanValue(value) {
+	if (value === undefined || value === null) return "";
+	if (Array.isArray(value)) return value.map(cleanValue).join(" ");
+	return String(value).replace(/\[\[|\]\]/g, "").replace(/"/g, "").trim();
+}
+
+/** @param {string} str */
+function titleCase(str) {
+	return str.replace(/\w\S*/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase());
+}
+
 const fileExists = (/** @type {string} */ filePath) => Application("Finder").exists(Path(filePath));
 
 //──────────────────────────────────────────────────────────────────────────────
@@ -52,6 +64,11 @@ function run() {
 	const excludeFilterJSON = `${vaultConfig}/app.json`;
 	const removeEmojis = $.getenv("remove_emojis") === "1";
 	const subtitleType = $.getenv("main_search_subtitle");
+
+	// vault-specific frontmatter keys — see "Note property key" workflow config, blank by default
+	const propParentKey = $.getenv("property_parent") || "";
+	const propCategoryKey = $.getenv("property_category") || "";
+	const propTypeKey = $.getenv("property_type") || "";
 
 	let recentJSON = `${vaultConfig}/workspace.json`;
 	if (!fileExists(recentJSON)) recentJSON = recentJSON.slice(0, -5); // Obsidian 0.16 uses workspace.json → https://discord.com/channels/686053708261228577/716028884885307432/1013906018578743478
@@ -185,6 +202,18 @@ function run() {
 		const isBookmarked = starsAndBookmarks.includes(relativePath);
 		const isRecent = recentFiles.includes(relativePath);
 
+		// note properties (parent / category / type), for both matching and subtitles
+		const fm = file.frontmatter || {};
+		const propBits = [fm[propParentKey], fm[propCategoryKey], fm[propTypeKey]]
+			.map(cleanValue)
+			.filter(Boolean)
+			.map(titleCase);
+		const propMatcher = [fm[propParentKey], fm[propCategoryKey], fm[propTypeKey]]
+			.map(cleanValue)
+			.filter(Boolean)
+			.join(" ");
+		const propPrefix = propBits.length ? `${propBits.join("  ·  ")}   ` : "";
+
 		// matching for Alfred
 		const tagMatcher = file.tags ? " #" + file.tags.join(" #") : "";
 		let additionalMatcher = "";
@@ -211,8 +240,14 @@ function run() {
 		// Notes (file names)
 		resultsArr[insertVia]({
 			title: emoji + filename,
-			match: camelCaseMatch(filename) + tagMatcher + " filename name title" + additionalMatcher,
-			subtitle: subtitle,
+			match:
+				camelCaseMatch(filename) +
+				tagMatcher +
+				" filename name title" +
+				additionalMatcher +
+				" " +
+				propMatcher,
+			subtitle: propPrefix + subtitle,
 			arg: relativePath,
 			quicklookurl: absolutePath,
 			type: "file:skipcheck",
@@ -225,8 +260,8 @@ function run() {
 			for (const alias of file.aliases) {
 				resultsArr[insertVia]({
 					title: emoji + alias,
-					match: camelCaseMatch(alias) + "alias",
-					subtitle: "↪ " + alias,
+					match: camelCaseMatch(alias) + "alias" + " " + propMatcher,
+					subtitle: propPrefix + "↪ " + alias,
 					arg: relativePath,
 					quicklookurl: absolutePath,
 					type: "file:skipcheck",
@@ -243,12 +278,12 @@ function run() {
 			const hLevel = heading.level;
 			if (headingIgnore[hLevel]) continue; // skips iteration if heading has been configured as ignore
 			const headingIconpath = `icons/headings/h${hLevel}.png`;
-			const matchStr = camelCaseMatch(hName) + `h${hLevel}`;
+			const matchStr = camelCaseMatch(hName) + `h${hLevel}` + " " + propMatcher;
 
 			resultsArr[insertVia]({
 				title: hName,
 				match: matchStr,
-				subtitle: "➣ " + filename,
+				subtitle: propPrefix + "➣ " + filename,
 				arg: relativePath + "#" + hName,
 				uid: relativePath + "#" + hName,
 				quicklookurl: absolutePath,

@@ -7,12 +7,24 @@ app.includeStandardAdditions = true;
 /** @type {AlfredRun} */
 // biome-ignore lint/correctness/noUnusedVariables: Alfred run
 function run(argv) {
-	const vaultPath = $.getenv("vault_path");
+	let vaultPath = $.getenv("vault_path");
 	const pasteInstead = $.getenv("paste_instead_of_copy") === "1";
-	const vaultNameEnc = encodeURIComponent(vaultPath.replace(/.*\//, ""));
 
 	// import variables
-	let [relativePath, heading] = argv[0].split("#");
+	let raw = argv[0];
+
+	// `oa` (multi-vault note search) prefixes the source vault's folder name
+	// before a "|", since its results aren't rooted at vault_path like everyone
+	// else's are.
+	const pipeIdx = raw.indexOf("|");
+	if (pipeIdx !== -1) {
+		const vaultFolder = raw.slice(0, pipeIdx);
+		raw = raw.slice(pipeIdx + 1);
+		vaultPath = `${vaultPath}/../${vaultFolder}`;
+	}
+	const vaultNameEnc = encodeURIComponent(vaultPath.replace(/\/$/, "").replace(/.*\//, ""));
+
+	let [relativePath, heading] = raw.split("#");
 	const relativeEncodedPath = encodeURIComponent(relativePath);
 	heading = heading ? encodeURIComponent(heading) : "";
 	const linkType = $.getenv("link_type_to_copy");
