@@ -6,6 +6,9 @@
 .gitignore
 .gitattributes
 
+# sync-alfred-workflow
+.alfred-workflow-uid
+
 # Alfred
 prefs.plist
 .rsync-exclude
