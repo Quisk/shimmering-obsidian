@@ -235,6 +235,12 @@ additional configured vaults**
 - Unlike `o`, this does not support folder browsing, canvases, or bookmark/
   recent-file boosting, since those depend on per-vault state (open tabs,
   starred files, bookmarks) that isn't merged across vaults.
+- Each additional vault needs the [Metadata Extractor
+  plugin](https://obsidian.md/plugins?id=metadata-extractor) installed,
+  enabled, and exported at least once (see [Installation](#installation)) —
+  `oa` reads each vault's own `metadata-extractor/metadata.json` to build
+  results. A vault without that file is silently skipped, contributing zero
+  results, rather than causing an error.
 - `⏎`: Open the file, or the file at a heading, in Obsidian — resolved against
   whichever vault the result actually belongs to.
 - `⌥ + ⏎`: Reveal the file in Finder.
