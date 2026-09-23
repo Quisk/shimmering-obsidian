@@ -65,10 +65,11 @@ function run() {
 	const removeEmojis = $.getenv("remove_emojis") === "1";
 	const subtitleType = $.getenv("main_search_subtitle");
 
-	// vault-specific frontmatter keys — see "Note property key" workflow config, blank by default
-	const propParentKey = $.getenv("property_parent") || "";
-	const propCategoryKey = $.getenv("property_category") || "";
-	const propTypeKey = $.getenv("property_type") || "";
+	// vault-specific frontmatter keys — see "Note properties to index" config, blank by default
+	const notePropertyKeys = ($.getenv("note_properties") || "")
+		.split(",")
+		.map((k) => k.trim())
+		.filter(Boolean);
 
 	let recentJSON = `${vaultConfig}/workspace.json`;
 	if (!fileExists(recentJSON)) recentJSON = recentJSON.slice(0, -5); // Obsidian 0.16 uses workspace.json → https://discord.com/channels/686053708261228577/716028884885307432/1013906018578743478
@@ -202,16 +203,11 @@ function run() {
 		const isBookmarked = starsAndBookmarks.includes(relativePath);
 		const isRecent = recentFiles.includes(relativePath);
 
-		// note properties (parent / category / type), for both matching and subtitles
+		// note properties (configured via note_properties), for both matching and subtitles
 		const fm = file.frontmatter || {};
-		const propBits = [fm[propParentKey], fm[propCategoryKey], fm[propTypeKey]]
-			.map(cleanValue)
-			.filter(Boolean)
-			.map(titleCase);
-		const propMatcher = [fm[propParentKey], fm[propCategoryKey], fm[propTypeKey]]
-			.map(cleanValue)
-			.filter(Boolean)
-			.join(" ");
+		const propValues = notePropertyKeys.map((k) => cleanValue(fm[k])).filter(Boolean);
+		const propBits = propValues.map(titleCase);
+		const propMatcher = propValues.join(" ");
 		const propPrefix = propBits.length ? `${propBits.join("  ·  ")}   ` : "";
 
 		// matching for Alfred

@@ -7740,62 +7740,20 @@ DOUBLE CLICK THIS to set Hotkey. Suggested Hotkey: cmd + shift + 1</string>
 				<key>default</key>
 				<string></string>
 				<key>placeholder</key>
-				<string>e.g. note.category</string>
+				<string>note.type, parent, note.category</string>
 				<key>required</key>
 				<false/>
 				<key>trim</key>
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>The frontmatter key in your vault that links a note to its structural parent, e.g. "parent". Leave blank to skip this property.</string>
+			<string>Comma-separated frontmatter keys to include in the search index, in display order (e.g. "note.type, parent, note.category"). Leave blank to skip.</string>
 			<key>label</key>
-			<string>Note property key: parent</string>
+			<string>Note properties to index</string>
 			<key>type</key>
 			<string>textfield</string>
 			<key>variable</key>
-			<string>property_parent</string>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>default</key>
-				<string></string>
-				<key>placeholder</key>
-				<string>e.g. note.category</string>
-				<key>required</key>
-				<false/>
-				<key>trim</key>
-				<true/>
-			</dict>
-			<key>description</key>
-			<string>The frontmatter key for a note's category/sub-classification, e.g. "note.category". Leave blank to skip this property.</string>
-			<key>label</key>
-			<string>Note property key: category</string>
-			<key>type</key>
-			<string>textfield</string>
-			<key>variable</key>
-			<string>property_category</string>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>default</key>
-				<string></string>
-				<key>placeholder</key>
-				<string>e.g. note.category</string>
-				<key>required</key>
-				<false/>
-				<key>trim</key>
-				<true/>
-			</dict>
-			<key>description</key>
-			<string>The frontmatter key for a note's type, e.g. "note.type". Leave blank to skip this property.</string>
-			<key>label</key>
-			<string>Note property key: type</string>
-			<key>type</key>
-			<string>textfield</string>
-			<key>variable</key>
-			<string>property_type</string>
+			<string>note_properties</string>
 		</dict>
 	</array>
 	<key>version</key>

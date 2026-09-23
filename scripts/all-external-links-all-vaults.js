@@ -38,14 +38,15 @@ function run() {
 		.filter(Boolean);
 	const VAULT_FOLDERS = [mainVaultFolder, ...extraVaultFolders];
 
-	// vault-specific frontmatter keys — see "Note property key" workflow config, blank by default
-	const propParentKey = $.getenv("property_parent") || "";
-	const propCategoryKey = $.getenv("property_category") || "";
-	const propTypeKey = $.getenv("property_type") || "";
+	// vault-specific frontmatter keys — see "Note properties to index" config, blank by default
+	const notePropertyKeys = ($.getenv("note_properties") || "")
+		.split(",")
+		.map((k) => k.trim())
+		.filter(Boolean);
 
-	// "vaultFolder/relative/path.md" -> {parent, category, type}, merged across
-	// each allow-listed vault's own metadata-extractor export
-	/** @type {Record<string, {parent: string, category: string, type: string}>} */
+	// "vaultFolder/relative/path.md" -> cleaned note-property values, in configured
+	// order, merged across each allow-listed vault's own metadata-extractor export
+	/** @type {Record<string, string[]>} */
 	const frontmatterByPath = {};
 	for (const vaultFolder of VAULT_FOLDERS) {
 		try {
@@ -54,11 +55,9 @@ function run() {
 			);
 			for (const entry of JSON.parse(metaRaw)) {
 				const fm = entry.frontmatter || {};
-				frontmatterByPath[`${vaultFolder}/${entry.relativePath}`] = {
-					parent: cleanValue(fm[propParentKey]),
-					category: cleanValue(fm[propCategoryKey]),
-					type: cleanValue(fm[propTypeKey]),
-				};
+				frontmatterByPath[`${vaultFolder}/${entry.relativePath}`] = notePropertyKeys.map((k) =>
+					cleanValue(fm[k]),
+				);
 			}
 		} catch (_error) {
 			// this vault's metadata.json is missing/unreadable — its links still show, minus properties
@@ -83,8 +82,8 @@ function run() {
 			const vaultFolder = relativePath.slice(0, slashIdx);
 			const pathInVault = relativePath.slice(slashIdx + 1);
 
-			const fm = frontmatterByPath[relativePath] || { parent: "", category: "", type: "" };
-			const bits = [fm.parent, fm.category, fm.type].filter(Boolean).map(titleCase);
+			const propValues = frontmatterByPath[relativePath] || [];
+			const bits = propValues.filter(Boolean).map(titleCase);
 			bits.push(filename.slice(0, 30));
 
 			return {
@@ -95,9 +94,7 @@ function run() {
 					alfredMatcher(title) +
 					alfredMatcher(filename) +
 					alfredMatcher(url) +
-					alfredMatcher(fm.parent) +
-					alfredMatcher(fm.category) +
-					alfredMatcher(fm.type),
+					propValues.map(alfredMatcher).join(""),
 				uid: line,
 				mods: {
 					// vaultFolder is prefixed (open-note.js splits on "|") since results

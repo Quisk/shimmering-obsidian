@@ -95,13 +95,13 @@ recently renamed notes, or recent tag changes are not picked up at once. You can
 change the metadata refresh rate via the Metadata Extractor Plugin's settings.
 
 > [!TIP]
-> If you use dot-namespaced frontmatter properties for structure (e.g., a
-> `parent` link, or a category/type classification), the `o`, `oa`, `oe`, and
-> `oea` searches can surface them: set the corresponding frontmatter key names
-> in the **Note property key: parent/category/type** workflow configuration
-> fields. All three are blank (disabled) by default. When set, the property
-> values show up in each result's subtitle and become part of its searchable
-> text.
+> If you use frontmatter properties for structure (e.g., a `parent` link, or a
+> category/type classification), the `o`, `oa`, `oe`, and `oea` searches can
+> surface them: list the frontmatter key names, comma-separated and in the
+> order you want them displayed, in the **Note properties to index** workflow
+> configuration field (e.g. `note.type, parent, note.category`). Blank
+> (disabled) by default. When set, the property values show up — in that
+> order — in each result's subtitle and become part of its searchable text.
 
 ### Main search
 **`o`: Open files in your vault.**

@@ -60,10 +60,11 @@ function run() {
 		.filter(Boolean);
 	const VAULT_FOLDERS = [mainVaultFolder, ...extraVaultFolders];
 
-	// vault-specific frontmatter keys — see "Note property key" workflow config, blank by default
-	const propParentKey = $.getenv("property_parent") || "";
-	const propCategoryKey = $.getenv("property_category") || "";
-	const propTypeKey = $.getenv("property_type") || "";
+	// vault-specific frontmatter keys — see "Note properties to index" config, blank by default
+	const notePropertyKeys = ($.getenv("note_properties") || "")
+		.split(",")
+		.map((k) => k.trim())
+		.filter(Boolean);
 
 	const hLVLignore = $.getenv("h_lvl_ignore") || "";
 	/** @type {boolean[]} */
@@ -106,16 +107,11 @@ function run() {
 			const absolutePath = `${vaultRoot}/${relativePath}`;
 			const vaultArg = `${vaultFolder}|${relativePath}`;
 
-			// note properties (parent / category / type), for both matching and subtitles
+			// note properties (configured via note_properties), for both matching and subtitles
 			const fm = file.frontmatter || {};
-			const propBits = [fm[propParentKey], fm[propCategoryKey], fm[propTypeKey]]
-				.map(cleanValue)
-				.filter(Boolean)
-				.map(titleCase);
-			const propMatcher = [fm[propParentKey], fm[propCategoryKey], fm[propTypeKey]]
-				.map(cleanValue)
-				.filter(Boolean)
-				.join(" ");
+			const propValues = notePropertyKeys.map((k) => cleanValue(fm[k])).filter(Boolean);
+			const propBits = propValues.map(titleCase);
+			const propMatcher = propValues.join(" ");
 			const propPrefix = propBits.length ? `${propBits.join("  ·  ")}   ` : "";
 
 			const tagMatcher = file.tags ? " #" + file.tags.join(" #") : "";
