@@ -11,9 +11,33 @@ Gallery.](https://alfred.app/workflows/chrisgrieser/shimmering-obsidian/)
 
 <img alt="Promo Video" width=70% src="https://user-images.githubusercontent.com/73286100/139678407-9ac39baa-5f49-42a0-9622-0fbaf68540b2.gif">
 
+## About this fork
+This is a personal fork of the upstream workflow. The workflow's own updater
+(and Alfred's gallery updater) overwrite `info.plist` and the bundled scripts
+on every release, which would silently wipe out any local customization —
+forking lets those changes live in git, get merged deliberately against new
+upstream releases, and stay safe to share. All fork-specific changes live on
+the `quisk-customizations` branch.
+
+What's different in this fork, at a high level:
+- **Note property search** (`o`, `oa`, `oe`, `oea`): frontmatter values (e.g. a
+  `parent` link, or a category/type classification) can now be surfaced in
+  search results, via a new **Note properties to index** configuration.
+- **Multi-vault search** (`oa`, `oea`): `oa` now searches files, aliases, and
+  headings across your main vault plus any number of additional vaults
+  (previously it searched attachments, which moved to the new `of` keyword);
+  `oea` does the same for external links. Additional vaults are configured
+  via a new **Additional vaults** setting and can be either sibling folders
+  of your main vault or any path on disk.
+
+Both configurations are optional and blank by default, so the workflow
+behaves exactly like upstream until you opt in.
+
 ## Table of contents
 
 <!-- toc -->
+
+- [About this fork](#about-this-fork)
 - [Installation](#installation)
 - [Alfred-based quick switcher](#alfred-based-quick-switcher)
     - [How the search works](#how-the-search-works)
