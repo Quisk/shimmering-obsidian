@@ -28,15 +28,29 @@ function run() {
 	const vaultPath = $.getenv("vault_path");
 	const parentPath = `${vaultPath}/..`;
 
-	// Vaults oea searches: the main vault, plus sibling folder names (relative
-	// to vault_path's parent) from the "Additional vault folders" workflow
-	// configuration — comma-separated, e.g. "Recipes.sync, Work.sync".
+	/** Resolve an "Additional vault folders" entry to its label and absolute
+	 * root. A bare name (e.g. "Recipes.sync") is treated as a sibling of
+	 * vault_path; an absolute or "~"-prefixed path is used as-is, so vaults
+	 * living anywhere on disk can be added, not just siblings. */
+	function resolveVaultEntry(entry) {
+		const isPath = entry.startsWith("/") || entry.startsWith("~");
+		const root = isPath
+			? entry.replace(/^~(?=$|\/)/, $.getenv("HOME")).replace(/\/$/, "")
+			: `${parentPath}/${entry}`;
+		const label = root.replace(/\/$/, "").replace(/.*\//, "");
+		return { label, root };
+	}
+
+	// Vaults oea searches: the main vault, plus any additional vaults from the
+	// "Additional vault folders" workflow configuration — comma-separated,
+	// e.g. "Recipes.sync, Work.sync" (siblings) or "~/Vaults/Work" (any path).
 	const mainVaultFolder = vaultPath.replace(/\/$/, "").replace(/.*\//, "");
-	const extraVaultFolders = ($.getenv("oa_vault_folders") || "")
+	const extraVaults = ($.getenv("oa_vault_folders") || "")
 		.split(",")
 		.map((v) => v.trim())
-		.filter(Boolean);
-	const VAULT_FOLDERS = [mainVaultFolder, ...extraVaultFolders];
+		.filter(Boolean)
+		.map(resolveVaultEntry);
+	const VAULTS = [{ label: mainVaultFolder, root: vaultPath }, ...extraVaults];
 
 	// vault-specific frontmatter keys — see "Note properties to index" config, blank by default
 	const notePropertyKeys = ($.getenv("note_properties") || "")
@@ -44,18 +58,18 @@ function run() {
 		.map((k) => k.trim())
 		.filter(Boolean);
 
-	// "vaultFolder/relative/path.md" -> cleaned note-property values, in configured
-	// order, merged across each allow-listed vault's own metadata-extractor export
+	// "vault.label/relative/path.md" -> cleaned note-property values, in
+	// configured order, merged across each vault's own metadata-extractor export
 	/** @type {Record<string, string[]>} */
 	const frontmatterByPath = {};
-	for (const vaultFolder of VAULT_FOLDERS) {
+	for (const vault of VAULTS) {
 		try {
 			const metaRaw = app.doShellScript(
-				`cat "${parentPath}/${vaultFolder}/.obsidian/plugins/metadata-extractor/metadata.json"`,
+				`cat "${vault.root}/.obsidian/plugins/metadata-extractor/metadata.json"`,
 			);
 			for (const entry of JSON.parse(metaRaw)) {
 				const fm = entry.frontmatter || {};
-				frontmatterByPath[`${vaultFolder}/${entry.relativePath}`] = notePropertyKeys.map((k) =>
+				frontmatterByPath[`${vault.label}/${entry.relativePath}`] = notePropertyKeys.map((k) =>
 					cleanValue(fm[k]),
 				);
 			}
@@ -64,29 +78,32 @@ function run() {
 		}
 	}
 
-	const searchPaths = VAULT_FOLDERS.map((v) => `"${v}"`).join(" ");
-
+	// PERF considered `rg`, but `grep` alone is actually surprisingly fast
+	// already, making `grep` a better choice since it does not add a dependency
 	/** @type AlfredItem[] */
-	const externalLinks = app
-		// PERF considered `rg`, but `grep` alone is actually surprisingly fast
-		// already, making `grep` a better choice since it does not add a dependency
-		.doShellScript(`cd "${parentPath}" && grep "\\[[^[]*?\\]\\(http[^)]*\\)" \
-		--include=\\*.md --recursive --line-number --only-matching --extended-regexp ${searchPaths}`)
-		.split("\r")
-		.map((line) => {
+	const externalLinks = [];
+	for (const vault of VAULTS) {
+		let rawLines;
+		try {
+			rawLines = app
+				.doShellScript(`cd "${vault.root}" && grep "\\[[^[]*?\\]\\(http[^)]*\\)" \
+				--include=\\*.md --recursive --line-number --only-matching --extended-regexp .`)
+				.split("\r");
+		} catch (_error) {
+			continue; // no external links in this vault, or vault unreachable
+		}
+
+		for (const line of rawLines) {
 			const [filename, lnum, ...mdLink] = line.split(":");
 			const [_, title, url] = mdLink.join(":").match(/\[([^[]*)\]\((.*)\)/);
 
-			const relativePath = filename.replace(/^\.\//, "");
-			const slashIdx = relativePath.indexOf("/");
-			const vaultFolder = relativePath.slice(0, slashIdx);
-			const pathInVault = relativePath.slice(slashIdx + 1);
-
+			const pathInVault = filename.replace(/^\.\//, "");
+			const relativePath = `${vault.label}/${pathInVault}`;
 			const propValues = frontmatterByPath[relativePath] || [];
 			const bits = propValues.filter(Boolean).map(titleCase);
 			bits.push(filename.slice(0, 30));
 
-			return {
+			externalLinks.push({
 				title: title,
 				subtitle: `${bits.join("  ·  ")}   ${url.slice(8)}`,
 				arg: url,
@@ -95,14 +112,15 @@ function run() {
 					alfredMatcher(filename) +
 					alfredMatcher(url) +
 					propValues.map(alfredMatcher).join(""),
-				uid: line,
+				uid: `${vault.label}:${line}`,
 				mods: {
-					// vaultFolder is prefixed (open-note.js splits on "|") since results
+					// vault.label is prefixed (open-note.js splits on "|") since results
 					// here aren't rooted at vault_path like oe's are.
-					cmd: { arg: `${vaultFolder}|${pathInVault}:${lnum}` },
+					cmd: { arg: `${vault.label}|${pathInVault}:${lnum}` },
 				},
-			};
-		});
+			});
+		}
+	}
 
 	return JSON.stringify({
 		items: externalLinks,

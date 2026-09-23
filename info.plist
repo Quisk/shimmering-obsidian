@@ -7719,16 +7719,16 @@ DOUBLE CLICK THIS to set Hotkey. Suggested Hotkey: cmd + shift + 1</string>
 				<key>default</key>
 				<string></string>
 				<key>placeholder</key>
-				<string>Vault2.sync, Vault3.sync</string>
+				<string>Vault2.sync, ~/Vaults/Work</string>
 				<key>required</key>
 				<false/>
 				<key>trim</key>
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>Comma-separated sibling vault folder names (siblings of Vault path) that oa and oea also search across, e.g. "Recipes.sync, Work.sync". Leave blank to search only the main vault.</string>
+			<string>Comma-separated additional vaults that oa and oea also search across. Each entry is either a sibling folder name (relative to Vault path, e.g. "Recipes.sync") or an absolute/"~"-prefixed path to a vault anywhere on disk (e.g. "~/Vaults/Work"). Leave blank to search only the main vault.</string>
 			<key>label</key>
-			<string>Additional vault folders (oa/oea)</string>
+			<string>Additional vaults (oa/oea)</string>
 			<key>type</key>
 			<string>textfield</string>
 			<key>variable</key>

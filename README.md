@@ -203,10 +203,11 @@ that note**
 ### Search notes across multiple vaults
 **`oa`: Search files, aliases, and headings across your main vault and any
 additional configured vaults**
-- A flat version of the main `o` search that also covers sibling vaults listed
-  in the **Additional vault folders (`oa`/`oea`)** workflow configuration
-  (comma-separated folder names, relative to the folder containing your main
-  vault — e.g. `Recipes.sync, Work.sync`).
+- A flat version of the main `o` search that also covers the vaults listed in
+  the **Additional vault folders (`oa`/`oea`)** workflow configuration —
+  comma-separated, each entry either a sibling folder name relative to your
+  main vault (e.g. `Recipes.sync`) or an absolute/`~`-prefixed path to a vault
+  anywhere on disk (e.g. `~/Vaults/Work`).
 - Unlike `o`, this does not support folder browsing, canvases, or bookmark/
   recent-file boosting, since those depend on per-vault state (open tabs,
   starred files, bookmarks) that isn't merged across vaults.

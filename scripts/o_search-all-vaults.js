@@ -50,15 +50,29 @@ function run() {
 	const vaultPath = $.getenv("vault_path");
 	const parentPath = `${vaultPath}/..`;
 
-	// Vaults oa searches: the main vault, plus sibling folder names (relative
-	// to vault_path's parent) from the "Additional vault folders" workflow
-	// configuration — comma-separated, e.g. "Recipes.sync, Work.sync".
+	/** Resolve an "Additional vault folders" entry to its label and absolute
+	 * root. A bare name (e.g. "Recipes.sync") is treated as a sibling of
+	 * vault_path; an absolute or "~"-prefixed path is used as-is, so vaults
+	 * living anywhere on disk can be added, not just siblings. */
+	function resolveVaultEntry(entry) {
+		const isPath = entry.startsWith("/") || entry.startsWith("~");
+		const root = isPath
+			? entry.replace(/^~(?=$|\/)/, $.getenv("HOME")).replace(/\/$/, "")
+			: `${parentPath}/${entry}`;
+		const label = root.replace(/\/$/, "").replace(/.*\//, "");
+		return { label, root };
+	}
+
+	// Vaults oa searches: the main vault, plus any additional vaults from the
+	// "Additional vault folders" workflow configuration — comma-separated,
+	// e.g. "Recipes.sync, Work.sync" (siblings) or "~/Vaults/Work" (any path).
 	const mainVaultFolder = vaultPath.replace(/\/$/, "").replace(/.*\//, "");
-	const extraVaultFolders = ($.getenv("oa_vault_folders") || "")
+	const extraVaults = ($.getenv("oa_vault_folders") || "")
 		.split(",")
 		.map((v) => v.trim())
-		.filter(Boolean);
-	const VAULT_FOLDERS = [mainVaultFolder, ...extraVaultFolders];
+		.filter(Boolean)
+		.map(resolveVaultEntry);
+	const VAULTS = [{ label: mainVaultFolder, root: vaultPath }, ...extraVaults];
 
 	// vault-specific frontmatter keys — see "Note properties to index" config, blank by default
 	const notePropertyKeys = ($.getenv("note_properties") || "")
@@ -74,8 +88,9 @@ function run() {
 	/** @type AlfredItem[] */
 	const resultsArr = [];
 
-	for (const vaultFolder of VAULT_FOLDERS) {
-		const vaultRoot = `${parentPath}/${vaultFolder}`;
+	for (const vault of VAULTS) {
+		const vaultFolder = vault.label;
+		const vaultRoot = vault.root;
 		const vaultConfig = `${vaultRoot}/.obsidian`;
 		const metadataJSON = `${vaultConfig}/plugins/metadata-extractor/metadata.json`;
 		const excludeFilterJSON = `${vaultConfig}/app.json`;
