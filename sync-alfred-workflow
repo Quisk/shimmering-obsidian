@@ -9,11 +9,28 @@ Usage: sync-alfred-workflow --to-local <repo-path>
 Syncs an Alfred workflow's git repo with its live install folder, without
 requiring the repo directory to be named after the workflow's UID.
 
+The live workflow folder is found by matching the repo's info.plist
+`bundleid` against every installed workflow's own info.plist — Alfred
+assigns each install its own random folder UID, so a UID committed to
+git on one machine will not exist on another. Bundleid is stable across
+installs, so this works out of the box on any machine that already has
+the workflow installed at least once.
+
+System requirements:
+  macOS, zsh, rsync, PlistBuddy (all standard on macOS), and Alfred with
+  the target workflow already installed at least once (this only updates
+  an existing live workflow folder, it does not create one). `just` is
+  NOT required — that's only for this repo's own Justfile recipes, a
+  separate tool.
+
 Repo requirements:
-  <repo-path>/.alfred-workflow-uid   one line: the live workflow's folder
-                                      name, e.g. user.workflow.3BD28F0A-...
-                                      (find it in Alfred > Workflows > right
-                                      click the workflow > "Open in Finder")
+  <repo-path>/info.plist             must contain a `bundleid` key
+  <repo-path>/.alfred-workflow-uid   optional override: one line, the
+                                      live workflow's folder name. Only
+                                      needed if bundleid matching fails
+                                      (e.g. two installed copies share a
+                                      bundleid) or the repo has no
+                                      info.plist yet.
   <repo-path>/.rsync-exclude         optional: rsync --exclude-from file
 
 Direction:
@@ -47,14 +64,6 @@ if [[ "$repo" != /* ]]; then
 fi
 repo=${repo%/}
 
-uid_file="$repo/.alfred-workflow-uid"
-if [[ ! -f "$uid_file" ]]; then
-	echo "error: missing $uid_file (create it with the live workflow folder's name on one line)" >&2
-	exit 1
-fi
-workflow_folder=$(<"$uid_file")
-workflow_folder=${workflow_folder//[[:space:]]/}
-
 sync_folder=$(defaults read com.runningwithcrayons.Alfred-Preferences syncfolder 2>/dev/null || true)
 if [[ -n "$sync_folder" ]]; then
 	sync_folder="${sync_folder/#\~/$HOME}"
@@ -62,8 +71,41 @@ if [[ -n "$sync_folder" ]]; then
 else
 	prefs_dir="$HOME/Library/Application Support/Alfred/Alfred.alfredpreferences"
 fi
+workflows_dir="$prefs_dir/workflows"
 
-local_workflow="$prefs_dir/workflows/$workflow_folder"
+local_workflow=""
+bundleid=""
+if [[ -f "$repo/info.plist" ]]; then
+	bundleid=$(/usr/libexec/PlistBuddy -c "Print :bundleid" "$repo/info.plist" 2>/dev/null || true)
+fi
+
+if [[ -n "$bundleid" ]]; then
+	matches=()
+	for candidate in "$workflows_dir"/*/info.plist; do
+		[[ -f "$candidate" ]] || continue
+		candidate_id=$(/usr/libexec/PlistBuddy -c "Print :bundleid" "$candidate" 2>/dev/null || true)
+		[[ "$candidate_id" == "$bundleid" ]] && matches+=("$(dirname "$candidate")")
+	done
+	if [[ ${#matches[@]} -eq 1 ]]; then
+		local_workflow="${matches[1]}"
+	elif [[ ${#matches[@]} -gt 1 ]]; then
+		echo "error: multiple installed workflows share bundleid $bundleid:" >&2
+		printf '  %s\n' "${matches[@]}" >&2
+		echo "resolve the ambiguity with $repo/.alfred-workflow-uid instead" >&2
+		exit 1
+	fi
+fi
+
+if [[ -z "$local_workflow" && -f "$repo/.alfred-workflow-uid" ]]; then
+	workflow_folder=$(<"$repo/.alfred-workflow-uid")
+	workflow_folder=${workflow_folder//[[:space:]]/}
+	local_workflow="$workflows_dir/$workflow_folder"
+fi
+
+if [[ -z "$local_workflow" ]]; then
+	echo "error: could not find a live workflow matching $repo/info.plist's bundleid ($bundleid) under $workflows_dir, and no $repo/.alfred-workflow-uid override was found" >&2
+	exit 1
+fi
 
 if [[ ! -d "$local_workflow" ]]; then
 	echo "error: live workflow folder not found: $local_workflow" >&2
