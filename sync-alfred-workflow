@@ -1,0 +1,97 @@
+#!/usr/bin/env zsh
+set -euo pipefail
+
+usage() {
+	cat <<'EOF'
+Usage: sync-alfred-workflow --to-local <repo-path>
+       sync-alfred-workflow --from-local <repo-path>
+
+Syncs an Alfred workflow's git repo with its live install folder, without
+requiring the repo directory to be named after the workflow's UID.
+
+Repo requirements:
+  <repo-path>/.alfred-workflow-uid   one line: the live workflow's folder
+                                      name, e.g. user.workflow.3BD28F0A-...
+                                      (find it in Alfred > Workflows > right
+                                      click the workflow > "Open in Finder")
+  <repo-path>/.rsync-exclude         optional: rsync --exclude-from file
+
+Direction:
+  --to-local     repo -> live Alfred workflow folder (deploy your changes)
+  --from-local   live Alfred workflow folder -> repo (pull back edits made
+                 through Alfred's own UI, e.g. workflow config values)
+
+Add --dry-run as a third argument to preview changes (including deletions)
+without touching anything.
+EOF
+}
+
+if [[ $# -lt 2 ]]; then
+	usage
+	exit 1
+fi
+
+direction=$1
+repo=$2
+rsync_flags=(--archive --delete)
+dry_run=0
+if [[ "${3:-}" == "--dry-run" ]]; then
+	rsync_flags+=(--dry-run --itemize-changes)
+	dry_run=1
+fi
+verb="Deployed"
+[[ "$dry_run" == 1 ]] && verb="Dry-run: would deploy"
+
+if [[ "$repo" != /* ]]; then
+	repo="$PWD/$repo"
+fi
+repo=${repo%/}
+
+uid_file="$repo/.alfred-workflow-uid"
+if [[ ! -f "$uid_file" ]]; then
+	echo "error: missing $uid_file (create it with the live workflow folder's name on one line)" >&2
+	exit 1
+fi
+workflow_folder=$(<"$uid_file")
+workflow_folder=${workflow_folder//[[:space:]]/}
+
+sync_folder=$(defaults read com.runningwithcrayons.Alfred-Preferences syncfolder 2>/dev/null || true)
+if [[ -n "$sync_folder" ]]; then
+	sync_folder="${sync_folder/#\~/$HOME}"
+	prefs_dir="$sync_folder/Alfred.alfredpreferences"
+else
+	prefs_dir="$HOME/Library/Application Support/Alfred/Alfred.alfredpreferences"
+fi
+
+local_workflow="$prefs_dir/workflows/$workflow_folder"
+
+if [[ ! -d "$local_workflow" ]]; then
+	echo "error: live workflow folder not found: $local_workflow" >&2
+	exit 1
+fi
+
+exclude_args=()
+if [[ -f "$repo/.rsync-exclude" ]]; then
+	exclude_args=(--exclude-from="$repo/.rsync-exclude")
+fi
+
+case "$direction" in
+	--to-local)
+		rsync "${rsync_flags[@]}" "${exclude_args[@]}" "$repo/" "$local_workflow/"
+		echo "$verb $repo -> $local_workflow"
+		;;
+	--from-local)
+		rsync "${rsync_flags[@]}" "${exclude_args[@]}" "$local_workflow/" "$repo/"
+		verb=${verb/deploy/pull}
+		verb=${verb/Deployed/Pulled}
+		echo "$verb $local_workflow -> $repo"
+		[[ "$dry_run" == 0 ]] && (cd "$repo" && git status --short)
+		;;
+	-h|--help)
+		usage
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac

@@ -23,6 +23,7 @@ LICENSE
 Justfile
 .github/
 .build-and-release.sh
+sync-alfred-workflow
 
 # linter & types
 .harper-dictionary.txt
