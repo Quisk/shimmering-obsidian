@@ -8,9 +8,15 @@ app.includeStandardAdditions = true;
 // biome-ignore lint/correctness/noUnusedVariables: Alfred run
 function run(argv) {
 	// get target spellcheck status
-	const workspaceName = argv[0];
-	const vaultPath = $.getenv("vault_path");
-	const vaultNameEnc = encodeURIComponent(vaultPath.replace(/.*\//, ""));
+	// owa passes "<vaultFolder>|<workspace>"; ow passes just "<workspace>"
+	let workspaceName = argv[0];
+	let vaultName = $.getenv("vault_path").replace(/\/$/, "").replace(/.*\//, "");
+	const sep = workspaceName.indexOf("|");
+	if (sep !== -1) {
+		vaultName = workspaceName.slice(0, sep);
+		workspaceName = workspaceName.slice(sep + 1);
+	}
+	const vaultNameEnc = encodeURIComponent(vaultName);
 
 	if (workspaceName === "_save-workspace") {
 		app.openLocation(`obsidian://advanced-uri?vault=${vaultNameEnc}&saveworkspace=true`);

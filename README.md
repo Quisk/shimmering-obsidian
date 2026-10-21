@@ -29,6 +29,9 @@ What's different in this fork, at a high level:
   `oea` does the same for external links. Additional vaults are configured
   via a new **Additional vaults** setting and can be either sibling folders
   of your main vault or any path on disk.
+- **Multi-vault workspaces** (`owa`): like `ow`, but lists saved workspaces
+  from the main vault plus the same additional vaults `oa`/`oea` use, and can
+  load, save, or manage workspaces in any of them.
 
 Both configurations are optional and blank by default, so the workflow
 behaves exactly like upstream until you opt in.
@@ -425,6 +428,11 @@ brew install tesseract tesseract-lang
   deleting a workspace.
 - Unsurprisingly, this workflow requires the [Workspaces Core
   Plugin](https://help.obsidian.md/Plugins/Workspaces) to be enabled.
+- **`owa`** does the same across your main vault plus the vaults in
+  **Additional vault folders (`oa`/`oea`)**. Each result's subtitle shows its
+  vault (and whether it's that vault's active workspace); each vault gets its
+  own Save/Manage entries. Vaults without a `.obsidian/workspaces.json` are
+  skipped. Each vault needs the Advanced URI plugin enabled.
 
 <img alt="workspace" width=60% src="https://user-images.githubusercontent.com/73286100/133615940-a56731e5-6b60-4d28-b877-7ea48d10225e.gif">
 
@@ -577,6 +585,7 @@ Search the official [Obsidian developer docs](https://docs.obsidian.md/Home).
 - `oo`: Append/open to scratchpad
 - `on`: New note
 - `ow`: Workspace switcher
+- `owa`: Workspace switcher, across the main vault + configured additional vaults
 - `ov`: Vault switcher
 - `oh`: Documentation search
 - `op`: Search plugins/themes
