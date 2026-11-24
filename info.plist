@@ -12,7 +12,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>503B3F91-98A0-4357-92F2-A88BD6EDB404</string>
+				<string>2D92021A-E5F1-406E-BBE3-D57E461D0C66</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -22,7 +22,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>7BA55F56-BE3A-483A-9CA6-CEE173CF2357</string>
+				<string>2A64F3CD-FDE0-4D0A-A56B-6F5FE49D4760</string>
 				<key>modifiers</key>
 				<integer>524288</integer>
 				<key>modifiersubtext</key>
@@ -32,7 +32,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>0645AAB4-66F5-4149-A92B-C58A80B649C7</string>
+				<string>B0B00392-71B2-4A8F-86C4-3A6B26169B08</string>
 				<key>modifiers</key>
 				<integer>262144</integer>
 				<key>modifiersubtext</key>
@@ -1481,6 +1481,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>B7C4E2A1-5D3F-4E8A-9C61-2F0A7D4B8E93</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>D3E8EE70-EB5F-4B58-B533-0A177A30C472</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>B9AC24F9-316C-4D05-903D-7ED21EA0A3C8</key>
 		<array>
 			<dict>
@@ -1929,19 +1942,6 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>5EF4465D-1198-4857-BFAD-B843B6339E84</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>B7C4E2A1-5D3F-4E8A-9C61-2F0A7D4B8E93</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>D3E8EE70-EB5F-4B58-B533-0A177A30C472</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -5678,6 +5678,63 @@ curl -sL "https://raw.githubusercontent.com/chrisgrieser/alfred-docs-searches/ma
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>externaltriggerid</key>
+				<string>open-relative-path-in-obsidian</string>
+				<key>passinputasargument</key>
+				<true/>
+				<key>passvariables</key>
+				<true/>
+				<key>workflowbundleid</key>
+				<string>self</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.callexternaltrigger</string>
+			<key>uid</key>
+			<string>2D92021A-E5F1-406E-BBE3-D57E461D0C66</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>externaltriggerid</key>
+				<string>reveal-in-finder</string>
+				<key>passinputasargument</key>
+				<true/>
+				<key>passvariables</key>
+				<true/>
+				<key>workflowbundleid</key>
+				<string>self</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.callexternaltrigger</string>
+			<key>uid</key>
+			<string>2A64F3CD-FDE0-4D0A-A56B-6F5FE49D4760</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>externaltriggerid</key>
+				<string>copy-markdown-link</string>
+				<key>passinputasargument</key>
+				<true/>
+				<key>passvariables</key>
+				<true/>
+				<key>workflowbundleid</key>
+				<string>self</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.callexternaltrigger</string>
+			<key>uid</key>
+			<string>B0B00392-71B2-4A8F-86C4-3A6B26169B08</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>## 1️⃣ Setting up this workflow for the first time
@@ -5936,6 +5993,15 @@ curl -sL "https://raw.githubusercontent.com/chrisgrieser/alfred-docs-searches/ma
 			<key>ypos</key>
 			<real>460.0</real>
 		</dict>
+		<key>2A64F3CD-FDE0-4D0A-A56B-6F5FE49D4760</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>xpos</key>
+			<real>230.0</real>
+			<key>ypos</key>
+			<real>1975.0</real>
+		</dict>
 		<key>2B55DCB2-3C6A-42EC-A014-095939CB3FAB</key>
 		<dict>
 			<key>colorindex</key>
@@ -5964,6 +6030,15 @@ curl -sL "https://raw.githubusercontent.com/chrisgrieser/alfred-docs-searches/ma
 			<real>1640.0</real>
 			<key>ypos</key>
 			<real>305.0</real>
+		</dict>
+		<key>2D92021A-E5F1-406E-BBE3-D57E461D0C66</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>xpos</key>
+			<real>230.0</real>
+			<key>ypos</key>
+			<real>1855.0</real>
 		</dict>
 		<key>2FD866C2-DDB1-4C2D-A420-3A580FBC60D2</key>
 		<dict>
@@ -6756,6 +6831,15 @@ DOUBLE CLICK THIS to set Hotkey.</string>
 			<key>ypos</key>
 			<real>240.0</real>
 		</dict>
+		<key>B0B00392-71B2-4A8F-86C4-3A6B26169B08</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>xpos</key>
+			<real>230.0</real>
+			<key>ypos</key>
+			<real>2095.0</real>
+		</dict>
 		<key>B1EC7FA6-1C91-4BCD-92C6-66771F207D9A</key>
 		<dict>
 			<key>colorindex</key>
@@ -6790,6 +6874,17 @@ DOUBLE CLICK THIS to set Hotkey. Suggested Hotkey: cmd + shift + 1</string>
 			<real>30.0</real>
 			<key>ypos</key>
 			<real>25.0</real>
+		</dict>
+		<key>B7C4E2A1-5D3F-4E8A-9C61-2F0A7D4B8E93</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>note</key>
+			<string>Workspace Switcher across the main vault + configured additional vaults</string>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>1075.0</real>
 		</dict>
 		<key>B7C53241-E63D-4D66-8A15-57B0DD1C72AC</key>
 		<dict>
@@ -7245,17 +7340,6 @@ DOUBLE CLICK THIS to set Hotkey. Suggested Hotkey: cmd + shift + 1</string>
 			<real>2295.0</real>
 			<key>ypos</key>
 			<real>850.0</real>
-		</dict>
-		<key>B7C4E2A1-5D3F-4E8A-9C61-2F0A7D4B8E93</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>9</integer>
-			<key>note</key>
-			<string>Workspace Switcher across the main vault + configured additional vaults</string>
-			<key>xpos</key>
-			<real>30.0</real>
-			<key>ypos</key>
-			<real>1075.0</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
